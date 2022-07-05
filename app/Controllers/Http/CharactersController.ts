@@ -11,27 +11,34 @@ export default class CharactersController {
         })
 
       const currentYear = new Date().getFullYear()
+      const charactersWithWeight = characters.filter((character) => character.weight).length
 
       const characterStatistics = characters.reduce(
         (acc, curr) => {
-          acc.averageCharacterWeight += parseFloat(curr.weight ?? '0') / characters.length
+          //compute average only for characters with defined weight same as avg function in SQL
+          if (curr.weight) {
+            acc.averageCharacterWeight += parseFloat(curr.weight) / charactersWithWeight
+          }
           const characterAge = currentYear - curr.born.getFullYear()
           acc.averageCharacterAge += characterAge / characters.length
           acc.nemesisCount += curr.nemeses.length
+          acc.nemesisWithYearsCount += curr.nemeses.filter((nemesis) => nemesis.years).length
           return acc
         },
         {
           averageCharacterWeight: 0,
           averageCharacterAge: 0,
           nemesisCount: 0,
+          nemesisWithYearsCount: 0,
           characterCount: characters.length,
         }
       )
 
+      //same as with character's weight
       const averageNemesisAge =
         characters
           .flatMap((character) => character.nemeses)
-          .reduce((acc, curr) => acc + curr.years, 0) / characterStatistics.nemesisCount
+          .reduce((acc, curr) => acc + curr.years, 0) / characterStatistics.nemesisWithYearsCount
 
       response.status(200).json({
         statistics: {
